@@ -1,0 +1,520 @@
+import pandas as pd 
+import matplotlib.pyplot as plt 
+import numpy as np 
+import math 
+
+
+Tl = pd.read_csv(r'D:\\Digitalization\\Benjamin\\TL.csv', skiprows=4)
+Lp = pd.read_csv(r'D:\Digitalization\Benjamin\Local precipitation.csv')
+Ls = pd.read_csv(r'D:\Digitalization\Benjamin\Level.csv')
+
+Tl['Date/Time'] = pd.to_datetime(Tl['Date/Time'] )
+Lp['date'] = pd.to_datetime(Lp['date'])
+Ls['Time'] = pd.to_datetime(Ls['Time'])
+#visualizing the data 
+
+Tl.iloc[0,0]
+
+# level cannot be below zero, hence making all the negative values as zero 
+
+for i in range(0,len(Ls['Time'])): 
+    if Ls['value'][i] < 0 : 
+        Ls['value'][i] = 0
+   
+
+
+
+
+
+
+
+
+Tl = Tl.drop(labels = range(0,57), axis =0 ) # droping repetative bad data 
+
+
+
+# converting negative values to zero 
+
+for i in range(0, len(Tl['Date/Time'])): 
+    if Tl.iloc[i,1] < 0 : 
+        Tl.iloc[i,1] = 0 
+    else : 
+        Tl.iloc[i,1] = Tl.iloc[i,1]
+
+
+
+
+
+  
+# Double mass 
+
+def Sm(t,g,y): 
+    for i in range(0, len(t.iloc[:,1])):
+        l = []
+        for z in range(1,y):
+            if t.iloc[i,z].astype(int) < 0:
+                l.append(0)
+            else :
+                l.append(t.iloc[i,z])
+        t.iloc[i,g] = np.mean(l)
+        l.clear()
+    return t 
+
+def Sum(t,g,y): 
+    for i in range(0, len(t.iloc[:,1])):
+        l = []
+        for z in range(1,y):
+            if t.iloc[i,z].astype(int) < 0 :
+                l.append(0)
+            else :
+                l.append(t.iloc[i,z])
+        t.iloc[i,g] = np.sum(l)
+        l.clear()
+    return t 
+
+Lp.info()
+LpT = Lp.drop(columns = 'Torpagatan')
+LpT['Mean'] = np.nan 
+LpT = Sm(LpT,8,9)
+LpTO = Lp.drop(columns = ['Tolered'])
+LpTO['Mean'] = np.nan 
+LpTO = Sm(LpTO,8,9)
+LpB = Lp.drop(columns = 'Bergsjön')
+LpB['Mean'] = np.nan
+LpB = Sm(LpB,8,9)
+LpC = Lp.drop(columns ='Chalmers' )
+LpC['Mean'] = np.nan
+LpC = Sm(LpC,8,9)
+LpBa = Lp.drop(columns = 'Barlastplatsen')
+LpBa['Mean'] = np.nan
+LpBa = Sm(LpBa,8,9)
+LpTo = Lp.drop(columns = 'Torslanda flygpl')
+LpTo['Mean'] = np.nan
+LpTo = Sm(LpTo,8,9)
+LpRy = Lp.drop(columns = 'Ryaverket')
+LpRy['Mean'] = np.nan
+LpRy = Sm(LpRy,8,9)
+LpDr = Lp.drop(columns = 'Drakegatan' )
+LpDr["Mean"] = np.nan
+LpDr = Sm(LpDr,8,9)
+
+
+figure = plt.figure(1, figsize = (30,15))
+plt.plot(Lp['Torpagatan'], LpT["Mean"], color = 'Blue', label = 'To')
+plt.plot(Lp['Tolered'], LpTO["Mean"], color = 'Indigo', label = 'Tol')
+plt.plot(Lp['Bergsjön'], LpB['Mean'], color = 'Red', label = 'Be')
+plt.plot(Lp['Chalmers'], LpC["Mean"], color = 'Green', label = 'C')
+plt.plot(Lp['Barlastplatsen'], LpBa['Mean'], color = 'Violet', label = 'Ba')
+plt.plot(Lp['Torslanda flygpl'], LpTo["Mean"], color = 'Yellow', label = 'TO')
+plt.plot(Lp['Ryaverket'], LpRy["Mean"], color = 'Brown', label = 'Ry')
+plt.plot(Lp['Drakegatan'], LpDr['Mean'], color = 'Magenta', label = 'Dr')
+plt.plot(LpT["Mean"], LpT["Mean"], color = 'Black')
+plt.title('Mass balance')
+plt.xlabel(' Accumulated Mean (mm)')
+plt.ylabel('Accumulated Mean 7 (mm)')
+plt.legend()
+
+
+                
+
+
+
+
+# calculating intensity 
+
+Rain = pd.DataFrame(Lp['date']) 
+Rain['Torpagatan'] = np.nan
+Rain['Bergsjon'] = np.nan
+Rain['Chalmers'] = np.nan
+Rain['Tolered'] = np.nan
+Rain['Barlastplatsen'] = np.nan
+Rain["Torslanda flygpl"] = np.nan 
+Rain['Ryaverket'] = np.nan 
+Rain['Drakegatan'] = np.nan 
+
+
+Rain.iloc[2][3]
+# Namika Function, intensity 
+def intens(x,c):
+    i1=[]
+    for i in range(len(x)-1):
+        i1.append(x.iloc[i+1,c]-x.iloc[i,c])
+    return(i1)
+
+
+
+
+
+
+for i in range(1,9) :
+    r = intens(Lp , i)
+    for z in range(len(Rain.iloc[:,1])-1):
+        Rain.iloc[z,i] = r[z]
+        
+        
+fig, (ax1,ax2,ax3,ax4,ax5,ax6, ax7, ax8) = plt.subplots(8, figsize = [20,10])
+fig.suptitle('Rain guage data')
+ax1.plot(Rain.iloc[:,0], Rain.iloc[:,1], label = 'Torpagatan', color = 'Blue')
+ax2.plot(Rain.iloc[:,0], Rain.iloc[:,3], label = 'Chalmers', color = 'Green')
+ax3.plot(Rain.iloc[:,0], Rain.iloc[:,6], label ='Torslanda flygpl' ,color = 'Yellow')
+ax4.plot(Rain.iloc[:,0], Rain.iloc[:,7], label = 'Ryaverket', color = 'Brown')
+ax5.plot(Rain.iloc[:,0], Rain.iloc[:,8], label = 'Drakegatan', color = 'Magenta')
+ax6.plot(Rain.iloc[:,0], Rain.iloc[:,5], label = 'Barlastplatsen', color = 'Violet')
+ax7.plot(Rain.iloc[:,0], Rain.iloc[:,2], label = 'Bergsjon', color = 'Red')
+ax8.plot(Rain.iloc[:,0], Rain.iloc[:,4], label = 'Tolered', color = 'Indigo')
+
+ 
+Pg = pd.read_csv(r'D:\Digitalization\Benjamin\PG.csv', skiprows = 14, sep = ';')
+Pg.info()
+Pg = Pg.drop(columns =['Fr�n Datum Tid (UTC)','Till Datum Tid (UTC)', 'Kvalitet','Tidsutsnitt:,,', 'Unnamed: 5' ])
+
+r20 = []
+r10 =[]
+r25=[]
+r30=[]
+r50 = []
+for i in range(len(Pg.iloc[:,0])):
+    if Pg.iloc[i,1] >= 10 : 
+        r10.append(1)
+    if Pg.iloc[i,1] >= 20:
+        r20.append(1)
+    if Pg.iloc[i,1] >= 25 : 
+        r25.append(1) 
+    if Pg.iloc[i,1] >= 30 : 
+        r30.append(1)
+    if Pg.iloc[i,1] >= 50 : 
+        r50.append(1)
+figure = plt.figure(1234)        
+plt.hist(Pg.iloc[:,1])
+plt.title('Distribution of rainfall in gothenburg 1960-2022')
+plt.xlabel('Precipitation in mm')
+plt.ylabel('No. of data points')
+RainD = pd.DataFrame(Rain)
+RainD['Sum'] = np.nan
+RainD = Sum(RainD,9,9)
+RainD.replace(0,np.nan, inplace = True)
+
+index =[]
+for i in range(len(RainD['date'])): 
+    for t in range(1,9):
+        for z in range(1,9): 
+            if  RainD.iloc[i,t] > RainD.iloc[i,z] * 5 :
+                index.append((i,t))
+                
+for i in range(len(RainD['date'])): 
+    for t in range(1,9):
+        for z in range(1,9):             
+            if RainD.iloc[i,z]/RainD.iloc[i,8] == 1 : 
+                if RainD.iloc[i,z] > 15:   # LOcalised rani parameter 
+                    RainD.iloc[i,z] = 0
+            if RainD.iloc[i,z] > 100 : 
+                RainD.iloc[i,z] = np.nan
+        
+RainD = Sum(RainD,9,9)
+index = [*set(index)]
+
+for i in range(len(index)):
+    RainD.iloc[index[i][0], index[i][1]] = (RainD.iloc[index[i][0], index[i][1]])/10
+RainD.replace(np.nan, 0, inplace=True)
+                
+
+# reading the file for Goteborg 
+Rain1 = pd.DataFrame(RainD)
+Rain1 = Rain1.set_index(Rain1['date'])
+Rain1 = Rain1.drop(columns = ['date'])
+
+Rain1 = Rain1.resample('24H', origin = 2020-11-10).sum()
+Rain1 = Rain1.reset_index()
+
+
+
+Pg['Representativt dygn'] = pd.to_datetime(Pg["Representativt dygn"])
+ 
+ 
+r =  Pg[Pg.iloc[:,0] == '2020-11-10'].index.values
+Pg = Pg.loc[r[0] :]
+
+
+Pg1 = pd.DataFrame(Rain1['date'])
+
+Pg1['Goteborg'] = np.nan
+
+Pg1['date'] = pd.to_datetime(Pg1['date']).dt.date
+Pg['Representativt dygn'] = pd.to_datetime(Pg["Representativt dygn"]).dt.date
+
+
+
+for z in range(len(Pg1['date'])):
+    for i in range(len(Pg['Representativt dygn'])):
+        if Pg.iloc[i,0] == Pg1.iloc[z,0]:
+            Pg1.iloc[z,1] = Pg.iloc[i,1]
+
+fig, (ax1,ax2,ax3,ax4,ax5,ax6,ax7,ax8, ax9) = plt.subplots(9, figsize = [20,10])
+fig.suptitle('Comparing Rain fall')
+ax1.plot(Pg1.iloc[:,0], Pg1.iloc[:,1], label ='Gotborg' )
+ax1.set_xticks([])
+ax2.plot(Rain1.iloc[:,0], Rain1.iloc[:,1], label = 'Torpagatan', color = 'Blue')
+ax2.set_xticks([])
+ax3.plot(Rain1.iloc[:,0], Rain1.iloc[:,3], label = 'Chalmers', color = 'Green')
+ax3.set_xticks([])
+ax4.plot(Rain1.iloc[:,0], Rain1.iloc[:,5], label ='Torslanda flygpl' ,color = 'Yellow')
+ax4.set_xticks([])
+ax5.plot(Rain1.iloc[:,0], Rain1.iloc[:,6], label = 'Ryaverket', color = 'Brown')
+ax5.set_xticks([])
+ax6.plot(Rain1.iloc[:,0], Rain1.iloc[:,7], label = 'Drakegatan', color = 'Magenta')
+ax6.set_xticks([])
+ax7.plot(Rain1.iloc[:,0], Rain1.iloc[:,5], label = 'Barlastplatsen', color = 'Violet')
+ax7.set_xticks([])
+ax8.plot(Rain1.iloc[:,0], Rain1.iloc[:,2], label = 'Bergsjon', color = 'Red')
+ax7.set_xticks([])
+ax9.plot(Rain1.iloc[:,0], Rain1.iloc[:,4], label = 'tolered', color = 'Indigo')
+fig.legend()
+
+
+
+
+RainAg = pd.DataFrame(RainD['date']) 
+RainAg['Torpagatan'] = np.nan
+RainAg['Bergsjon'] = np.nan
+RainAg['Chalmers'] = np.nan
+RainAg['Tolered'] = np.nan
+RainAg['Barlastplatsen'] = np.nan
+RainAg["Torslanda flygpl"] = np.nan 
+RainAg['Ryaverket'] = np.nan 
+RainAg['Drakegatan'] = np.nan
+
+
+def Cumilative(x,c):
+    i1=[]
+    k = []
+    k.append(x.iloc[:,c])
+    for i in range(len(x)+1):
+        i1.append(sum(k[0][0:i:1]))
+    return(i1)
+
+u = Cumilative(RainD,4 )
+for i in range(1,9) :
+    r = Cumilative(RainD , i)
+    for z in range(len(RainD.iloc[:,1])):
+        RainAg.iloc[z,i] = r[z]
+
+
+LpT1 = RainAg.drop(columns = 'Torpagatan')
+LpT1['Mean'] = np.nan 
+LpT1= Sm(LpT1,8,9)
+LpTO1 = RainAg.drop(columns = ['Tolered'])
+LpTO1['Mean'] = np.nan 
+LpTO1 = Sm(LpTO1,8,9)
+LpB1 = RainAg.drop(columns = 'Bergsjon')
+LpB1['Mean'] = np.nan
+LpB1 = Sm(LpB1,8,9)
+LpC1 = RainAg.drop(columns ='Chalmers' )
+LpC1['Mean'] = np.nan
+LpC1 = Sm(LpC1,8,9)
+LpBa1 = RainAg.drop(columns = 'Barlastplatsen')
+LpBa1['Mean'] = np.nan
+LpBa1 = Sm(LpBa1,8,9)
+LpTo1 = RainAg.drop(columns = 'Torslanda flygpl')
+LpTo1['Mean'] = np.nan
+LpTo1 = Sm(LpTo1,8,9)
+LpRy1 = RainAg.drop(columns = 'Ryaverket')
+LpRy1['Mean'] = np.nan
+LpRy1 = Sm(LpRy1,8,9)
+LpDr1 = RainAg.drop(columns = 'Drakegatan' )
+LpDr1["Mean"] = np.nan
+LpDr1 = Sm(LpDr1,8,9)
+
+figure = plt.figure(10, figsize = (30,15))
+plt.plot(RainAg['Torpagatan'], LpT1["Mean"], color = 'Blue', label = 'To')
+plt.plot(RainAg['Tolered'], LpTO1["Mean"], color = 'Indigo', label = 'Tol')
+plt.plot(RainAg['Bergsjon'], LpB1['Mean'], color = 'Red', label = 'Be')
+plt.plot(RainAg['Chalmers'], LpC1["Mean"], color = 'Green', label = 'C')
+plt.plot(RainAg['Barlastplatsen'], LpBa1['Mean'], color = 'Violet', label = 'Ba')
+plt.plot(RainAg['Torslanda flygpl'], LpTo1["Mean"], color = 'Yellow', label = 'TO')
+plt.plot(RainAg['Ryaverket'], LpRy1["Mean"], color = 'Brown', label = 'Ry')
+plt.plot(RainAg['Drakegatan'], LpDr1['Mean'], color = 'Magenta', label = 'Dr')
+plt.plot(LpT1["Mean"], LpT1["Mean"], color = 'Black')
+plt.title('Mass balance')
+plt.xlabel(' Accumulated Mean (mm)')
+plt.ylabel('Accumulated Mean 7 (mm)')
+plt.legend()
+
+
+
+
+
+
+
+# working on water level and temperature data 
+
+Tl['Month'] = Tl['Date/Time'].dt.month
+Tl['Year'] = Tl['Date/Time'].dt.year
+Tl['Day'] = Tl['Date/Time'].dt.day
+Tl['Time'] = Tl["Date/Time"].dt.time
+
+Tl["NewTime"] = np.nan
+
+for i in range(57, len(Tl.iloc[:,1])): 
+    re = []
+    if Tl.iloc[i,3] <= 7 : 
+        re.append(Tl.iloc[i,3])
+        Tl.iloc[i,3] = Tl.iloc[i,5]   
+        Tl.iloc[i,5] = re[0]
+        re.clear()
+    Tl["NewTime"][i] = f'{Tl.iloc[i,3]}-{Tl.iloc[i,5]}-2021 {Tl["Time"][i]}'
+        
+Tl['NewTime'] = pd.to_datetime(Tl['NewTime'] )
+
+# working on other level data 
+Ls['Month'] = Ls['Time'].dt.month
+Ls['Year'] = Ls['Time'].dt.year
+Ls['Day'] = Ls['Time'].dt.day
+Ls['TimeO'] = Ls["Time"].dt.time
+
+Ls["NewTime"] = np.nan
+# Adjusting Time series, bypassing the bug with three loops that are to be in this exact order
+for i in range(len(Ls.iloc[:,1])):
+    re1 = []
+    if Ls.iloc[i,2] >= 10 :
+        re1.append(Ls.iloc[i,2])
+        Ls.iloc[i,2] = Ls.iloc[i,4]
+        Ls.iloc[i,4] = re1[0]
+        re1.clear()
+        
+for i in range(5888, 9157 ):
+    re1 = []
+    if Ls.iloc[i,2] < 10 :
+        re1.append(Ls.iloc[i,2])
+        Ls.iloc[i,2] = Ls.iloc[i,4]
+        Ls.iloc[i,4] = re1[0]
+        re1.clear()
+    
+        
+for i in range(len(Ls.iloc[:,1])):        
+    Ls["value"][i] = Ls["value"][i] * 100
+    Ls["NewTime"][i] = f'{Ls.iloc[i,2]}-{Ls.iloc[i,4]}-{Ls.iloc[i,3]}  {Ls.iloc[i,5]}'
+    
+    
+Ls["NewTime"] = pd.to_datetime(Ls['NewTime'])
+
+
+
+r2 =  Ls[Ls.iloc[:,0] == '2021-09-9 00:00:00'].index.values
+Ls = Ls.loc[r2[0] :]
+
+
+
+fig, (ax1,ax2, ax3) = plt.subplots(3, figsize = [20,10])
+fig.suptitle('Level and Temp')
+ax1.plot(Tl['NewTime'], Tl.iloc[:,1], color = 'Blue')
+ax2.plot(Tl["NewTime"], Tl.iloc[:,2], color = 'Red')
+ax3.plot(Ls["NewTime"], Ls.iloc[:,1], color = 'Black')
+
+plt.figure(4, figsize = (30,15))
+plt.plot(Ls["NewTime"], Ls.iloc[:,1], color = 'Black')
+plt.xlabel('TIme')
+plt.ylabel('Depth m')
+
+Tl['velocity']  = np.nan
+Tl['Discharge'] = np.nan
+Tl['specific discharge'] = np.nan
+
+
+for i in range(57, len(Tl['Discharge'])) :
+    m = Tl.iloc[i,1] * 10**-2
+    t1 = 1 - ((2*m)/ 0.160)
+    theta = math.acos(t1)
+    if theta == 0 :
+        Rh = 0 
+    else :
+        Rh = 0.040*(1 - ((math.sin((2*theta)))/(2*theta)))
+    A = 0.003200*((2*theta) - (math.sin((2*theta))))
+    
+    Tl['Discharge'][i] = ((100 * A * (Rh** (2/3)) * (0.01103**0.5)))
+    Tl['velocity'][i] = (Tl['Discharge'][i] /A)  
+    Tl['specific discharge'][i] = ((Tl['Discharge'][i])/129381) * 1000* 5 *60
+    
+Si = 4300 
+Si2 = 4821    
+plt.figure(11, figsize = (20,10))
+plt.plot(Tl['Date/Time'][Si :Si2], Tl['Discharge'][Si : Si2])
+plt.plot()
+      
+
+
+
+
+row=Tl[Tl.iloc[:,0]=='2021-09-16'].index.values
+row2=Tl[Tl.iloc[:,0]=='2021-09-17'].index.values-1
+low=Tl.iloc[row[0]:row2[0],-2].idxmin()
+peak=Tl.iloc[row[0]:row2[0],-2].idxmax()
+
+#for i in range(57, len(Tl['Date/Time'])): 
+    #Tl['Discharge'][i] = 
+row=Tl[Tl.iloc[:,0]=='2021-09-15'].index.values
+row2=Tl[Tl.iloc[:,0]=='2021-09-16'].index.values-1
+low1=Tl.iloc[row[0]:row2[0],-1].idxmin()
+peak1=Tl.iloc[row[0]:row2[0],-1].idxmax()
+
+TTp1 =Tl.iloc[low,0] - Tl.iloc[peak,0]
+
+((np.sum(Tl.iloc[4591:4679,9] - 0.0033)*5*60)/(129381))*1000
+a=Tl.iloc[1,9]
+
+
+
+
+
+
+
+temp=[]
+date = []
+for i in range(len(Tl.iloc[:,7])): 
+    temp.append(Tl.iloc[i,7])
+    date.append(Tl.iloc[i,2])
+    
+temp,date = zip(*sorted(zip(temp,date),key=lambda x: x[0]))
+
+plt.figure(23, figsize=(30,10))
+plt.scatter(temp, date)
+
+Tl['Date'] = Tl['NewTime'].dt.date
+
+NewD = pd.DataFrame(Pg1.iloc[:,0])
+
+NewD['P'] = Pg1.iloc[:,1]
+NewD['Dis'] = np.nan
+NewD['Temp'] = np.nan
+NewD['Sdis'] = np.nan
+
+for i in range(len(Pg1.iloc[:,0])):
+    r= Tl[Tl['Date'] == Pg1.iloc[i,0]].index.values
+    Q = np.sum(Tl['Discharge'][r])
+    T = np.mean(Tl.iloc[r,2])
+    Sq = np.sum(Tl['specific discharge'][r])
+    NewD.iloc[i,2] = Q
+    NewD.iloc[i,3] = T
+    NewD.iloc[i,4] = Sq
+
+NewD =     NewD.dropna(axis=0)
+    
+    
+fig, (ax1,ax2, ax3, ax4) = plt.subplots(4, figsize = [20,10])
+fig.suptitle('Comparing P, Q , T and specific discharge')
+ax1.plot(NewD['date'], NewD['P'], color = 'Blue', label = 'Precipitation')
+ax1.set_xticks([])
+ax1.set_ylabel('P in mm')
+ax2.plot(NewD['date'], NewD['Dis'], color = 'Darkblue', label = 'Daischarge')
+ax2.set_xticks([])
+ax2.set_ylabel('Discharge(m3/s)')
+ax3.plot(NewD['date'], NewD['Temp'], color = 'Red', label = 'Temperature') 
+ax3.set_ylabel('Degree C')
+ax3.set_xticks([])
+ax4.plot(NewD['date'] , NewD['Sdis'], color = 'orange' , label = 'specific discharge')
+ax4.set_ylabel('Specific Q(mm/day)')
+ax4.set_xlabel('Time')
+fig.legend()   
+
+
+Tl.iloc[:,-1] = pd.to_datetime(Tl.iloc[:,-1])
+t= Tl[ Tl.iloc[:,-1] == '2021-09-16'].index.values
