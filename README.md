@@ -1,3 +1,1 @@
-# DrinkingWatModel
-A predictive model for drinking water supply for a small neighbourhood in stockholm 
-The data for the same is given in files named Tl, Local precipitation and Level. 
+To plot and analyse the stormwater discharge for a rain events for a particular neighbourhood in gothernburgh. The data for the same is given in the Leve, local precipitation and Tl files. In this analysis a prediction of total discharge is done in a pipe using the manning's equation.  
